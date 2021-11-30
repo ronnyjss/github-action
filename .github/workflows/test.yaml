@@ -1,0 +1,45 @@
+name: "Teste"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    name: Teste
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php:
+          - 8.0
+        composer-args: [ "" ]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Instalar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Dependências de cache do PHP
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-composer-
+
+      - name: Instalar dependências
+        run: composer install --prefer-dist --no-progress --no-suggest ${{ matrix.composer-args }}
+
+      - name: Testes
+        run: |
+           sudo apt-get update && sudo apt-get install tzdata locales -y && sudo locale-gen pt_BR.UTF-8 && sudo locale-gen en_US.UTF-8 && sudo locale-gen es_PY.UTF-8 && sudo locale-gen ru_RU.UTF-8 && sudo locale-gen af_ZA.UTF-8
+           sudo update-locale
+           echo "All languages..."
+           locale -a
